@@ -1,0 +1,29 @@
+{
+    "name": "geronto-app-back",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "runDev": "nodemon server.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/eliashhtores/geronto-app-back.git"
+    },
+    "author": "eliashhtores",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/eliashhtores/geronto-app-back/issues"
+    },
+    "homepage": "https://github.com/eliashhtores/geronto-app-back#readme",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "mysql2": "^2.3.3"
+    },
+    "devDependencies": {
+        "dotenv": "^10.0.0",
+        "nodemon": "^2.0.15"
+    }
+}
