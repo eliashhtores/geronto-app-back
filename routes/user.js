@@ -33,8 +33,8 @@ router.post('/', async (req, res) => {
 router.post('/validate', async (req, res) => {
     try {
         const { username, password } = req.body
-        const user = await pool.query('SELECT id, name, username FROM user WHERE username = ? AND password = PASSWORD(?)', [username, password])
-        console.log(username, password)
+        // @@TODO handle this encryption differently
+        const user = await pool.query("SELECT id, name, username FROM user WHERE username = ? AND password = CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?)))))", [username, password])
 
         if (user[0].length == 0) {
             res.status(404).json(user[0])
