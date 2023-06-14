@@ -2,8 +2,19 @@ const express = require('express')
 const router = express.Router()
 const app = express()
 const pool = require('../database/db')
+const winston = require('winston')
 
 app.use(express.json())
+
+const logConfiguration = {
+    'transports': [
+        new winston.transports.File({
+            filename: 'logs/app.log'
+        })
+    ]
+}
+
+const winstonLogger = winston.createLogger(logConfiguration)
 
 // Get one user by id
 router.get('/:id', getUserByID, async (req, res) => {
@@ -13,19 +24,17 @@ router.get('/:id', getUserByID, async (req, res) => {
 // Create user
 router.post('/', async (req, res) => {
     try {
-        const { username, name, password, user_type_id, created_by } = req.body
-
-        const newUser = await pool.query('INSERT INTO user (username, name, password, user_type_id, created_by) VALUES (?, ?, PASSWORD(?), ?, ?, ?)', [
-            username,
+        const { username, name, password } = req.body
+        const newUser = await pool.query('INSERT INTO user (name, username, password) VALUES (?, ?, PASSWORD(?))', [
             name,
-            password,
-            user_type_id,
-            created_by,
+            username,
+            password
         ])
         res.status(201).json(newUser)
     } catch (error) {
         res.status(500).json({ message: error.message })
         console.error(error.message)
+        winstonLogger.error(`${error.message} on ${new Date()}`)
     }
 })
 
@@ -35,7 +44,6 @@ router.post('/validate', async (req, res) => {
         const { username, password } = req.body
         // @@TODO handle this encryption differently
         const user = await pool.query("SELECT id, name, username FROM user WHERE username = ? AND password = CONCAT('*', UPPER(SHA1(UNHEX(SHA1(?)))))", [username, password])
-
         if (user[0].length == 0) {
             res.status(404).json(user[0])
             return
@@ -45,6 +53,7 @@ router.post('/validate', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message, status: 500 })
         console.error(error.message)
+        winstonLogger.error(`${error.message} on ${new Date()}`)
     }
 })
 
@@ -60,6 +69,7 @@ async function getUserByID(req, res, next) {
     } catch (error) {
         res.status(500).json({ message: error.message, status: 500 })
         console.error(error.message)
+        winstonLogger.error(`${error.message} on ${new Date()}`)
     }
 }
 

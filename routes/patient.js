@@ -2,8 +2,19 @@ const express = require('express')
 const router = express.Router()
 const app = express()
 const pool = require('../database/db')
+const winston = require('winston')
 
 app.use(express.json())
+
+const logConfiguration = {
+    'transports': [
+        new winston.transports.File({
+            filename: 'logs/app.log'
+        })
+    ]
+}
+
+const winstonLogger = winston.createLogger(logConfiguration)
 
 // Get one patient by id
 router.get('/:id', getPatientByID, async (req, res) => {
@@ -20,7 +31,7 @@ router.post('/', async (req, res) => {
     try {
         const {
             name,
-            age,
+            birth_date,
             gender,
             height,
             weight,
@@ -30,15 +41,15 @@ router.post('/', async (req, res) => {
             non_pathological_personal_history,
             surgical_history_hospitalizations,
             gynecological_history,
-            laboratories_xrays,
+            laboratories_xray,
             created_by,
         } = req.body
 
         const newPatient = await pool.query(
-            'INSERT INTO patient (name, age, gender, height, weight, allergies, family_history, pathological_personal_history, non_pathological_personal_history, surgical_history_hospitalizations, gynecological_history, laboratories_xrays, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO patient (name, birth_date, gender, height, weight, allergies, family_history, pathological_personal_history, non_pathological_personal_history, surgical_history_hospitalizations, gynecological_history, laboratories_xray, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 name,
-                age,
+                birth_date,
                 gender,
                 height,
                 weight,
@@ -48,7 +59,7 @@ router.post('/', async (req, res) => {
                 non_pathological_personal_history,
                 surgical_history_hospitalizations,
                 gynecological_history,
-                laboratories_xrays,
+                laboratories_xray,
                 created_by,
             ]
         )
@@ -56,6 +67,7 @@ router.post('/', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message })
         console.error(error.message)
+        winstonLogger.error(`${error.message} on ${new Date()}`)
     }
 })
 
@@ -64,7 +76,7 @@ router.patch('/:id', async (req, res) => {
     const { id } = req.params
     const {
         name,
-        age,
+        birth_date,
         gender,
         height,
         weight,
@@ -74,15 +86,15 @@ router.patch('/:id', async (req, res) => {
         non_pathological_personal_history,
         surgical_history_hospitalizations,
         gynecological_history,
-        laboratories_xrays,
+        laboratories_xray,
         updated_by,
     } = req.body
     try {
         const updatedPatient = await pool.query(
-            'UPDATE patient SET name = ?, age = ?, gender = ?, height = ?, weight = ?, allergies = ?, family_history = ?, pathological_personal_history = ?, non_pathological_personal_history = ?, surgical_history_hospitalizations = ?, gynecological_history = ?, laboratories_xrays = ?, updated_by = ? WHERE id = ?',
+            'UPDATE patient SET name = ?, birth_date = ?, gender = ?, height = ?, weight = ?, allergies = ?, family_history = ?, pathological_personal_history = ?, non_pathological_personal_history = ?, surgical_history_hospitalizations = ?, gynecological_history = ?, laboratories_xray = ?, updated_by = ? WHERE id = ?',
             [
                 name,
-                age,
+                birth_date,
                 gender,
                 height,
                 weight,
@@ -92,7 +104,7 @@ router.patch('/:id', async (req, res) => {
                 non_pathological_personal_history,
                 surgical_history_hospitalizations,
                 gynecological_history,
-                laboratories_xrays,
+                laboratories_xray,
                 updated_by,
                 id,
             ]
@@ -101,6 +113,7 @@ router.patch('/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message })
         console.error(error.message)
+        winstonLogger.error(`${error.message} on ${new Date()}`)
     }
 })
 
@@ -116,6 +129,7 @@ async function getPatientByID(req, res, next) {
     } catch (error) {
         res.status(500).json({ message: error.message, status: 500 })
         console.error(error.message)
+        winstonLogger.error(`${error.message} on ${new Date()}`)
     }
 }
 
@@ -130,6 +144,7 @@ async function getPatientsByName(req, res, next) {
     } catch (error) {
         res.status(500).json({ message: error.message, status: 500 })
         console.error(error.message)
+        winstonLogger.error(`${error.message} on ${new Date()}`)
     }
 }
 
